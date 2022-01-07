@@ -54,66 +54,89 @@ class FuzzyController:
 
     def inference(self, world):
         pa, pv, cv = world['pa'], world['pv'], world['cv']
-        stop = max(max(min(self.pa_up(pa), self.pv_stop(pv)),
-                       min(self.pa_up_right(pa), self.pv_ccw_slow(pv)),
-                       min(self.pa_up_left(pa), self.pv_cw_slow(pv))),
-                   min(self.pa_down_more_right(pa), self.pv_cw_slow(pv)),
-                   min(self.pa_down_more_left(pa), self.pv_ccw_slow(pv)),
-                   min(self.pa_down(pa), self.pv_ccw_fast(pv)),
-                   min(self.pa_up(pa), self.pv_stop(pv)),
-                   min(self.pa_down(pa), self.pv_cw_fast(pv)),
-                   min(self.pa_down_left(pa), self.pv_cw_fast(pv)),
-                   min(self.pa_down_right(pa), self.pv_ccw_fast(pv)),
-                   min(self.pa_down_more_right(pa), self.pv_cw_fast(pv)),
-                   min(self.pa_down_more_right(pa), self.pv_ccw_fast(pv)),
-                   min(self.pa_down_more_left(pa), self.pv_cw_fast(pv)),
-                   min(self.pa_down_more_left(pa), self.pv_ccw_fast(pv)),
-                   min(self.cv_stop(cv), self.pv_stop(pv), self.pa_up(pa)))
-        right_fast = max(min(self.pa_up_more_right(pa), self.pv_ccw_slow(pv)),
-                         min(self.pa_up_more_right(pa), self.pv_cw_slow(pv)),
-                         min(self.pa_up_more_right(pa), self.pv_cw_fast(pv)),
-                         min(self.pa_down_more_right(pa), self.pv_ccw_slow(pv)),
-                         min(self.pa_down_right(pa), self.pv_ccw_slow(pv)),
-                         min(self.pa_down_right(pa), self.pv_cw_slow(pv)),
-                         min(self.pa_up_right(pa), self.pv_cw_slow(pv)),
-                         min(self.pa_up_right(pa), self.pv_stop(pv)),
-                         min(self.pa_up_right(pa), self.pv_cw_fast(pv)),
-                         min(self.pa_up_left(pa), self.pv_cw_fast(pv)),
-                         min(self.pa_down(pa), self.pv_stop(pv)),
-                         min(self.pa_up(pa), self.pv_cw_fast(pv)),
-                         min(self.cv_left_fast(cv), self.pv_stop(pv)),
-                         min(self.cv_left_fast(cv), self.pv_cw_fast(pv)),
-                         min(self.cv_left_fast(cv), self.pv_cw_slow(pv)),
-                         min(self.cv_stop(cv), self.pv_ccw_fast(pv)))
-        left_fast = max(min(self.pa_up_more_left(pa), self.pv_ccw_slow(pv)),
-                        min(self.pa_up_more_left(pa), self.pv_cw_slow(pv)),
-                        min(self.pa_up_more_left(pa), self.pv_ccw_fast(pv)),
-                        min(self.pa_down_more_left(pa), self.pv_cw_slow(pv)),
-                        min(self.pa_down_left(pa), self.pv_cw_slow(pv)),
-                        min(self.pa_down_left(pa), self.pv_ccw_slow(pv)),
-                        min(self.pa_up_left(pa), self.pv_ccw_slow(pv)),
-                        min(self.pa_up_left(pa), self.pv_stop(pv)),
-                        min(self.pa_up_left(pa), self.pv_ccw_fast(pv)),
-                        min(self.pa_up_right(pa), self.pv_ccw_fast(pv)),
-                        min(self.pa_up(pa), self.pv_ccw_fast(pv)),
-                        min(self.cv_right_fast(cv), self.pv_stop(pv)),
-                        min(self.cv_right_fast(cv), self.pv_ccw_fast(pv)),
-                        min(self.cv_right_fast(cv), self.pv_ccw_slow(pv)),
-                        min(self.cv_stop(cv), self.pv_ccw_fast(pv)))
-        left_slow = max(min(self.pa_up_more_right(pa), self.pv_ccw_fast(pv)),
-                        min(self.pa_down_left(pa), self.pv_ccw_fast(pv)),
-                        min(self.pa_up_left(pa), self.pv_cw_slow(pv)),
-                        min(self.pa_up(pa), self.pv_ccw_slow(pv)),
-                        min(self.cv_right_fast(cv), self.pv_cw_slow(pv)),
-                        min(self.cv_left_slow(cv), self.pv_ccw_fast(pv)),
-                        min(self.cv_left_fast(cv), self.pv_ccw_fast(pv)))
-        right_slow = max(min(self.pa_up_more_left(pa), self.pv_cw_fast(pv)),
-                         min(self.pa_down_right(pa), self.pv_cw_fast(pv)),
-                         min(self.pa_up_right(pa), self.pv_ccw_slow(pv)),
-                         min(self.pa_up(pa), self.pv_cw_slow(pv)),
-                         min(self.cv_left_slow(cv), self.pv_ccw_slow(pv)),
-                         min(self.cv_right_slow(cv), self.pv_cw_slow(pv)),
-                         min(self.cv_right_slow(cv), self.pv_cw_fast(pv)))
+        self_pv_stop = self.pv_stop(pv)
+        self_pv_ccw_slow = self.pv_ccw_slow(pv)
+        self_pv_cw_slow = self.pv_cw_slow(pv)
+        self_pv_ccw_fast = self.pv_ccw_fast(pv)
+        self_pv_cw_fast = self.pv_cw_fast(pv)
+
+        self_pa_up = self.pa_up(pa)
+        self_pa_down_more_right = self.pa_down_more_right(pa)
+        self_pa_down = self.pa_down(pa)
+        self_pa_down_more_left = self.pa_down_more_left(pa)
+        self_pa_up_left = self.pa_up_left(pa)
+        self_pa_up_right = self.pa_up_right(pa)
+        self_pa_down_left = self.pa_down_left(pa)
+        self_pa_down_right = self.pa_down_right(pa)
+        self_pa_up_more_right = self.pa_up_more_right(pa)
+        self_pa_up_more_left = self.pa_up_more_left(pa)
+
+        self_cv_stop = self.cv_stop(cv)
+        self_cv_left_fast = self.cv_left_fast(cv)
+        self_cv_right_fast = self.cv_right_fast(cv)
+        self_cv_left_slow = self.cv_left_slow(cv)
+        self_cv_right_slow = self.cv_right_slow(cv)
+
+        stop = max(max(min(self_pa_up, self_pv_stop),
+                       min(self_pa_up_right, self_pv_ccw_slow),
+                       min(self_pa_up_left, self_pv_cw_slow)),
+                   min(self_pa_down_more_right, self_pv_cw_slow),
+                   min(self_pa_down_more_left, self_pv_ccw_slow),
+                   min(self_pa_down, self_pv_ccw_fast),
+                   min(self_pa_up, self_pv_stop),
+                   min(self_pa_down, self_pv_cw_fast),
+                   min(self_pa_down_left, self_pv_cw_fast),
+                   min(self_pa_down_right, self_pv_ccw_fast),
+                   min(self_pa_down_more_right, self_pv_cw_fast),
+                   min(self_pa_down_more_right, self_pv_ccw_fast),
+                   min(self_pa_down_more_left, self_pv_cw_fast),
+                   min(self_pa_down_more_left, self_pv_ccw_fast),
+                   min(self_cv_stop, self_pv_stop, self_pa_up))
+        right_fast = max(min(self_pa_up_more_right, self_pv_ccw_slow),
+                         min(self_pa_up_more_right, self_pv_cw_slow),
+                         min(self_pa_up_more_right, self_pv_cw_fast),
+                         min(self_pa_down_more_right, self_pv_ccw_slow),
+                         min(self_pa_down_right, self_pv_ccw_slow),
+                         min(self_pa_down_right, self_pv_cw_slow),
+                         min(self_pa_up_right, self_pv_cw_slow),
+                         min(self_pa_up_right, self_pv_stop),
+                         min(self_pa_up_right, self_pv_cw_fast),
+                         min(self_pa_up_left, self_pv_cw_fast),
+                         min(self_pa_down, self_pv_stop),
+                         min(self_pa_up, self_pv_cw_fast),
+                         min(self_cv_left_fast, self_pv_stop),
+                         min(self_cv_left_fast, self_pv_cw_fast),
+                         min(self_cv_left_fast, self_pv_cw_slow),
+                         min(self_cv_stop, self_pv_ccw_fast))
+        left_fast = max(min(self_pa_up_more_left, self_pv_ccw_slow),
+                        min(self_pa_up_more_left, self_pv_cw_slow),
+                        min(self_pa_up_more_left, self_pv_ccw_fast),
+                        min(self_pa_down_more_left, self_pv_cw_slow),
+                        min(self_pa_down_left, self_pv_cw_slow),
+                        min(self_pa_down_left, self_pv_ccw_slow),
+                        min(self_pa_up_left, self_pv_ccw_slow),
+                        min(self_pa_up_left, self_pv_stop),
+                        min(self_pa_up_left, self_pv_ccw_fast),
+                        min(self_pa_up_right, self_pv_ccw_fast),
+                        min(self_pa_up, self_pv_ccw_fast),
+                        min(self_cv_right_fast, self_pv_stop),
+                        min(self_cv_right_fast, self_pv_ccw_fast),
+                        min(self_cv_right_fast, self_pv_ccw_slow),
+                        min(self_cv_stop, self_pv_ccw_fast))
+        left_slow = max(min(self_pa_up_more_right, self_pv_ccw_fast),
+                        min(self_pa_down_left, self_pv_ccw_fast),
+                        min(self_pa_up_left, self_pv_cw_slow),
+                        min(self_pa_up, self_pv_ccw_slow),
+                        min(self_cv_right_fast, self_pv_cw_slow),
+                        min(self_cv_left_slow, self_pv_ccw_fast),
+                        min(self_cv_left_fast, self_pv_ccw_fast))
+        right_slow = max(min(self_pa_up_more_left, self_pv_cw_fast),
+                         min(self_pa_down_right, self_pv_cw_fast),
+                         min(self_pa_up_right, self_pv_ccw_slow),
+                         min(self_pa_up, self_pv_cw_slow),
+                         min(self_cv_left_slow, self_pv_ccw_slow),
+                         min(self_cv_right_slow, self_pv_cw_slow),
+                         min(self_cv_right_slow, self_pv_cw_fast))
         return left_fast, left_slow, right_fast, right_slow, stop
 
     def linear_equation(self, x1, y1, x2, y2, x):

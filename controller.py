@@ -37,110 +37,33 @@ class FuzzyController:
         return force
 
     def fuzzify(self, world):
-        pa, pv, cv = world['pa'], world['pv'], world['cv']
-        fuzzy_params = {'pv_stop': self.pv_stop(pv), 'pv_ccw_slow': self.pv_ccw_slow(pv),
-                        'pv_cw_slow': self.pv_cw_slow(pv), 'pv_ccw_fast': self.pv_ccw_fast(pv),
-                        'pv_cw_fast': self.pv_cw_fast(pv), 'pa_up': self.pa_up(pa),
-                        'pa_down_more_right': self.pa_down_more_right(pa), 'pa_down': self.pa_down(pa),
-                        'pa_down_more_left': self.pa_down_more_left(pa), 'pa_up_left': self.pa_up_left(pa),
-                        'pa_up_right': self.pa_up_right(pa), 'pa_down_left': self.pa_down_left(pa),
-                        'pa_down_right': self.pa_down_right(pa), 'pa_up_more_right': self.pa_up_more_right(pa),
-                        'pa_up_more_left': self.pa_up_more_left(pa), 'cv_stop': self.cv_stop(cv),
-                        'cv_left_fast': self.cv_left_fast(cv), 'cv_right_fast': self.cv_right_fast(cv),
-                        'cv_left_slow': self.cv_left_slow(cv), 'cv_right_slow': self.cv_right_slow(cv)}
+        pa, pv, cv, cp = world['pa'], world['pv'], world['cv'], world['cp']
+        fuzzy_params = {'pa_up_more_right': self.fuzzification(pa, (0, 0), (30, 1), (60, 0)),
+                        'pa_up_right': self.fuzzification(pa, (30, 0), (60, 1), (90, 0)),
+                        'pa_up': self.fuzzification(pa, (60, 0), (90, 1), (120, 0)),
+                        'pa_up_left': self.fuzzification(pa, (90, 0), (120, 1), (150, 0)),
+                        'pa_up_more_left': self.fuzzification(pa, (120, 0), (150, 1), (180, 0)),
+                        'pa_down_more_left': self.fuzzification(pa, (180, 0), (210, 1), (240, 0)),
+                        'pa_down_left': self.fuzzification(pa, (210, 0), (240, 1), (270, 0)),
+                        'pa_down': self.fuzzification(pa, (240, 0), (270, 1), (300, 0)),
+                        'pa_down_right': self.fuzzification(pa, (270, 0), (300, 1), (330, 0)),
+                        'pa_down_more_right': self.fuzzification(pa, (300, 0), (330, 1), (360, 0)),
+                        'pv_cw_fast': self.fuzzification(pv, (-200, 0), (-200, 1), (-100, 0)),
+                        'pv_cw_slow': self.fuzzification(pv, (-200, 0), (-100, 1), (0, 0)),
+                        'pv_stop': self.fuzzification(pv, (-100, 0), (0, 1), (100, 0)),
+                        'pv_ccw_slow': self.fuzzification(pv, (0, 0), (100, 1), (200, 0)),
+                        'pv_ccw_fast': self.fuzzification(pv, (100, 0), (200, 1), (200, 0)),
+                        'cp_left_far': self.fuzzification(cp, (-10, 0), (-10, 1), (-5, 0)),
+                        'cp_left_near': self.fuzzification(cp, (-10, 0), (-2.5, 1), (0, 0)),
+                        'cp_stop': self.fuzzification(cp, (-2.5, 0), (0, 1), (2.5, 0)),
+                        'cp_right_near': self.fuzzification(cp, (0, 0), (2.5, 1), (10, 0)),
+                        'cp_right_far': self.fuzzification(cp, (5, 0), (10, 1), (10, 0)),
+                        'cv_left_fast': self.fuzzification(cv, (-5, 0), (-5, 1), (-2.5, 0)),
+                        'cv_left_slow': self.fuzzification(cv, (-5, 0), (-1, 1), (0, 0)),
+                        'cv_stop': self.fuzzification(cv, (-1, 0), (0, 1), (1, 0)),
+                        'cv_right_slow': self.fuzzification(cv, (0, 0), (1, 1), (5, 0)),
+                        'cv_right_fast': self.fuzzification(cv, (2.5, 0), (5, 1), (5, 0))}
         return fuzzy_params
-
-    def inference(self, fuzzy_params):
-
-        stop = max(max(min(fuzzy_params['pa_up'], fuzzy_params['pv_stop']),
-                       min(fuzzy_params['pa_up_right'], fuzzy_params['pv_ccw_slow']),
-                       min(fuzzy_params['pa_up_left'], fuzzy_params['pv_cw_slow'])),
-                   min(fuzzy_params['pa_down_more_right'], fuzzy_params['pv_cw_slow']),
-                   min(fuzzy_params['pa_down_more_left'], fuzzy_params['pv_ccw_slow']),
-                   min(fuzzy_params['pa_down'], fuzzy_params['pv_ccw_fast']),
-                   min(fuzzy_params['pa_up'], fuzzy_params['pv_stop']),
-                   min(fuzzy_params['pa_down'], fuzzy_params['pv_cw_fast']),
-                   min(fuzzy_params['pa_down_left'], fuzzy_params['pv_cw_fast']),
-                   min(fuzzy_params['pa_down_right'], fuzzy_params['pv_ccw_fast']),
-                   min(fuzzy_params['pa_down_more_right'], fuzzy_params['pv_cw_fast']),
-                   min(fuzzy_params['pa_down_more_right'], fuzzy_params['pv_ccw_fast']),
-                   min(fuzzy_params['pa_down_more_left'], fuzzy_params['pv_cw_fast']),
-                   min(fuzzy_params['pa_down_more_left'], fuzzy_params['pv_ccw_fast']),
-                   min(fuzzy_params['cv_stop'], fuzzy_params['pv_stop'], fuzzy_params['pa_up']))
-        right_fast = max(min(fuzzy_params['pa_up_more_right'], fuzzy_params['pv_ccw_slow']),
-                         min(fuzzy_params['pa_up_more_right'], fuzzy_params['pv_cw_slow']),
-                         min(fuzzy_params['pa_up_more_right'], fuzzy_params['pv_cw_fast']),
-                         min(fuzzy_params['pa_down_more_right'], fuzzy_params['pv_ccw_slow']),
-                         min(fuzzy_params['pa_down_right'], fuzzy_params['pv_ccw_slow']),
-                         min(fuzzy_params['pa_down_right'], fuzzy_params['pv_cw_slow']),
-                         min(fuzzy_params['pa_up_right'], fuzzy_params['pv_cw_slow']),
-                         min(fuzzy_params['pa_up_right'], fuzzy_params['pv_stop']),
-                         min(fuzzy_params['pa_up_right'], fuzzy_params['pv_cw_fast']),
-                         min(fuzzy_params['pa_up_left'], fuzzy_params['pv_cw_fast']),
-                         min(fuzzy_params['pa_down'], fuzzy_params['pv_stop']),
-                         min(fuzzy_params['pa_up'], fuzzy_params['pv_cw_fast']),
-                         min(fuzzy_params['cv_left_fast'], fuzzy_params['pv_stop']),
-                         min(fuzzy_params['cv_left_fast'], fuzzy_params['pv_cw_fast']),
-                         min(fuzzy_params['cv_left_fast'], fuzzy_params['pv_cw_slow']),
-                         min(fuzzy_params['cv_stop'], fuzzy_params['pv_ccw_fast']))
-        left_fast = max(min(fuzzy_params['pa_up_more_left'], fuzzy_params['pv_ccw_slow']),
-                        min(fuzzy_params['pa_up_more_left'], fuzzy_params['pv_cw_slow']),
-                        min(fuzzy_params['pa_up_more_left'], fuzzy_params['pv_ccw_fast']),
-                        min(fuzzy_params['pa_down_more_left'], fuzzy_params['pv_cw_slow']),
-                        min(fuzzy_params['pa_down_left'], fuzzy_params['pv_cw_slow']),
-                        min(fuzzy_params['pa_down_left'], fuzzy_params['pv_ccw_slow']),
-                        min(fuzzy_params['pa_up_left'], fuzzy_params['pv_ccw_slow']),
-                        min(fuzzy_params['pa_up_left'], fuzzy_params['pv_stop']),
-                        min(fuzzy_params['pa_up_left'], fuzzy_params['pv_ccw_fast']),
-                        min(fuzzy_params['pa_up_right'], fuzzy_params['pv_ccw_fast']),
-                        min(fuzzy_params['pa_up'], fuzzy_params['pv_ccw_fast']),
-                        min(fuzzy_params['cv_right_fast'], fuzzy_params['pv_stop']),
-                        min(fuzzy_params['cv_right_fast'], fuzzy_params['pv_ccw_fast']),
-                        min(fuzzy_params['cv_right_fast'], fuzzy_params['pv_ccw_slow']),
-                        min(fuzzy_params['cv_stop'], fuzzy_params['pv_ccw_fast']))
-        left_slow = max(min(fuzzy_params['pa_up_more_right'], fuzzy_params['pv_ccw_fast']),
-                        min(fuzzy_params['pa_down_left'], fuzzy_params['pv_ccw_fast']),
-                        min(fuzzy_params['pa_up_left'], fuzzy_params['pv_cw_slow']),
-                        min(fuzzy_params['pa_up'], fuzzy_params['pv_ccw_slow']),
-                        min(fuzzy_params['cv_right_fast'], fuzzy_params['pv_cw_slow']),
-                        min(fuzzy_params['cv_left_slow'], fuzzy_params['pv_ccw_fast']),
-                        min(fuzzy_params['cv_left_fast'], fuzzy_params['pv_ccw_fast']))
-        right_slow = max(min(fuzzy_params['pa_up_more_left'], fuzzy_params['pv_cw_fast']),
-                         min(fuzzy_params['pa_down_right'], fuzzy_params['pv_cw_fast']),
-                         min(fuzzy_params['pa_up_right'], fuzzy_params['pv_ccw_slow']),
-                         min(fuzzy_params['pa_up'], fuzzy_params['pv_cw_slow']),
-                         min(fuzzy_params['cv_left_slow'], fuzzy_params['pv_ccw_slow']),
-                         min(fuzzy_params['cv_right_slow'], fuzzy_params['pv_cw_slow']),
-                         min(fuzzy_params['cv_right_slow'], fuzzy_params['pv_cw_fast']))
-        return left_fast, left_slow, right_fast, right_slow, stop
-
-    def defuzzification(self, belonging):
-        left_fast, left_slow, right_fast, right_slow, stop = belonging
-        points = np.linspace(-100, 100, 1000)
-        integral = 0.0
-        sums = 0.0
-        for i in range(len(points)):
-            force_right_fast = min(right_fast, self.force_right_fast(points[i]))
-            force_right_slow = min(right_slow, self.force_right_slow(points[i]))
-            force_left_fast = min(left_fast, self.force_left_fast(points[i]))
-            force_left_slow = min(left_slow, self.force_left_slow(points[i]))
-            force_Stop = min(stop, self.force_stop(points[i]))
-            max_force = max(force_right_fast, force_right_slow, force_left_fast, force_left_slow, force_Stop)
-            integral += max_force
-            sums += max_force * points[i]
-        if integral == 0:
-            return 0
-        else:
-            return sums / integral
-
-    def linear_equation(self, x1, y1, x2, y2, x):
-        if x1 == x2:
-            y = float((max(y1, y2)))
-        else:
-            slope = (y2 - y1) / float((x2 - x1))
-            offset = y1 - slope * x1
-            y = slope * x + offset
-        return y
 
     def fuzzification(self, x, beginning, middle, end):
         (x1, y1), (x2, y2), (x3, y3) = beginning, middle, end
@@ -151,92 +74,93 @@ class FuzzyController:
         else:
             return 0
 
-    def pa_up_more_right(self, x):
-        return self.fuzzification(x, (0, 0), (30, 1), (60, 0))
+    def linear_equation(self, x1, y1, x2, y2, x):
+        if x1 == x2:
+            y = float((max(y1, y2)))
+        else:
+            slope = (y2 - y1) / float((x2 - x1))
+            offset = y1 - slope * x1
+            y = slope * x + offset
+        return y
 
-    def pa_up_right(self, x):
-        return self.fuzzification(x, (30, 0), (60, 1), (90, 0))
+    def inference(self, param):
+        stop = max(max(min(param['pa_up'], param['pv_stop']),
+                       min(param['pa_up_right'], param['pv_ccw_slow']),
+                       min(param['pa_up_left'], param['pv_cw_slow'])),
+                   min(param['pa_down_more_right'], param['pv_cw_slow']),
+                   min(param['pa_down_more_left'], param['pv_ccw_slow']),
+                   min(param['pa_down'], param['pv_ccw_fast']),
+                   min(param['pa_up'], param['pv_stop']),
+                   min(param['pa_down'], param['pv_cw_fast']),
+                   min(param['pa_down_left'], param['pv_cw_fast']),
+                   min(param['pa_down_right'], param['pv_ccw_fast']),
+                   min(param['pa_down_more_right'], param['pv_cw_fast']),
+                   min(param['pa_down_more_right'], param['pv_ccw_fast']),
+                   min(param['pa_down_more_left'], param['pv_cw_fast']),
+                   min(param['pa_down_more_left'], param['pv_ccw_fast']),
+                   min(param['cv_stop'], param['pv_stop'], param['pa_up']))
+        right_fast = max(min(param['pa_up_more_right'], param['pv_ccw_slow']),
+                         min(param['pa_up_more_right'], param['pv_cw_slow']),
+                         min(param['pa_up_more_right'], param['pv_cw_fast']),
+                         min(param['pa_down_more_right'], param['pv_ccw_slow']),
+                         min(param['pa_down_right'], param['pv_ccw_slow']),
+                         min(param['pa_down_right'], param['pv_cw_slow']),
+                         min(param['pa_up_right'], param['pv_cw_slow']),
+                         min(param['pa_up_right'], param['pv_stop']),
+                         min(param['pa_up_right'], param['pv_cw_fast']),
+                         min(param['pa_up_left'], param['pv_cw_fast']),
+                         min(param['pa_down'], param['pv_stop']),
+                         min(param['pa_up'], param['pv_cw_fast']),
+                         min(param['cv_left_fast'], param['pv_stop']),
+                         min(param['cv_left_fast'], param['pv_cw_fast']),
+                         min(param['cv_left_fast'], param['pv_cw_slow']),
+                         min(param['cv_stop'], param['pv_ccw_fast']))
+        left_fast = max(min(param['pa_up_more_left'], param['pv_ccw_slow']),
+                        min(param['pa_up_more_left'], param['pv_cw_slow']),
+                        min(param['pa_up_more_left'], param['pv_ccw_fast']),
+                        min(param['pa_down_more_left'], param['pv_cw_slow']),
+                        min(param['pa_down_left'], param['pv_cw_slow']),
+                        min(param['pa_down_left'], param['pv_ccw_slow']),
+                        min(param['pa_up_left'], param['pv_ccw_slow']),
+                        min(param['pa_up_left'], param['pv_stop']),
+                        min(param['pa_up_left'], param['pv_ccw_fast']),
+                        min(param['pa_up_right'], param['pv_ccw_fast']),
+                        min(param['pa_up'], param['pv_ccw_fast']),
+                        min(param['cv_right_fast'], param['pv_stop']),
+                        min(param['cv_right_fast'], param['pv_ccw_fast']),
+                        min(param['cv_right_fast'], param['pv_ccw_slow']),
+                        min(param['cv_stop'], param['pv_ccw_fast']))
+        left_slow = max(min(param['pa_up_more_right'], param['pv_ccw_fast']),
+                        min(param['pa_down_left'], param['pv_ccw_fast']),
+                        min(param['pa_up_left'], param['pv_cw_slow']),
+                        min(param['pa_up'], param['pv_ccw_slow']),
+                        min(param['cv_right_fast'], param['pv_cw_slow']),
+                        min(param['cv_left_slow'], param['pv_ccw_fast']),
+                        min(param['cv_left_fast'], param['pv_ccw_fast']))
+        right_slow = max(min(param['pa_up_more_left'], param['pv_cw_fast']),
+                         min(param['pa_down_right'], param['pv_cw_fast']),
+                         min(param['pa_up_right'], param['pv_ccw_slow']),
+                         min(param['pa_up'], param['pv_cw_slow']),
+                         min(param['cv_left_slow'], param['pv_ccw_slow']),
+                         min(param['cv_right_slow'], param['pv_cw_slow']),
+                         min(param['cv_right_slow'], param['pv_cw_fast']))
+        return left_fast, left_slow, right_fast, right_slow, stop
 
-    def pa_up(self, x):
-        return self.fuzzification(x, (60, 0), (90, 1), (120, 0))
-
-    def pa_up_left(self, x):
-        return self.fuzzification(x, (90, 0), (120, 1), (150, 0))
-
-    def pa_up_more_left(self, x):
-        return self.fuzzification(x, (120, 0), (150, 1), (180, 0))
-
-    def pa_down_more_left(self, x):
-        return self.fuzzification(x, (180, 0), (210, 1), (240, 0))
-
-    def pa_down_left(self, x):
-        return self.fuzzification(x, (210, 0), (240, 1), (270, 0))
-
-    def pa_down(self, x):
-        return self.fuzzification(x, (240, 0), (270, 1), (300, 0))
-
-    def pa_down_right(self, x):
-        return self.fuzzification(x, (270, 0), (300, 1), (330, 0))
-
-    def pa_down_more_right(self, x):
-        return self.fuzzification(x, (300, 0), (330, 1), (360, 0))
-
-    def pv_cw_fast(self, x):
-        return self.fuzzification(x, (-200, 0), (-200, 1), (-100, 0))
-
-    def pv_cw_slow(self, x):
-        return self.fuzzification(x, (-200, 0), (-100, 1), (0, 0))
-
-    def pv_stop(self, x):
-        return self.fuzzification(x, (-100, 0), (0, 1), (100, 0))
-
-    def pv_ccw_slow(self, x):
-        return self.fuzzification(x, (0, 0), (100, 1), (200, 0))
-
-    def pv_ccw_fast(self, x):
-        return self.fuzzification(x, (100, 0), (200, 1), (200, 0))
-
-    def cp_left_far(self, x):
-        return self.fuzzification(x, (-10, 0), (-10, 1), (-5, 0))
-
-    def cp_left_near(self, x):
-        return self.fuzzification(x, (-10, 0), (-2.5, 1), (0, 0))
-
-    def cp_stop(self, x):
-        return self.fuzzification(x, (-2.5, 0), (0, 1), (2.5, 0))
-
-    def cp_right_near(self, x):
-        return self.fuzzification(x, (0, 0), (2.5, 1), (10, 0))
-
-    def cp_right_far(self, x):
-        return self.fuzzification(x, (5, 0), (10, 1), (10, 0))
-
-    def cv_left_fast(self, x):
-        return self.fuzzification(x, (-5, 0), (-5, 1), (-2.5, 0))
-
-    def cv_left_slow(self, x):
-        return self.fuzzification(x, (-5, 0), (-1, 1), (0, 0))
-
-    def cv_stop(self, x):
-        return self.fuzzification(x, (-1, 0), (0, 1), (1, 0))
-
-    def cv_right_slow(self, x):
-        return self.fuzzification(x, (0, 0), (1, 1), (5, 0))
-
-    def cv_right_fast(self, x):
-        return self.fuzzification(x, (2.5, 0), (5, 1), (5, 0))
-
-    def force_left_fast(self, x):
-        return self.fuzzification(x, (-100, 0), (-80, 1), (-60, 0))
-
-    def force_left_slow(self, x):
-        return self.fuzzification(x, (-80, 0), (-60, 1), (0, 0))
-
-    def force_stop(self, x):
-        return self.fuzzification(x, (-60, 0), (0, 1), (60, 0))
-
-    def force_right_slow(self, x):
-        return self.fuzzification(x, (0, 0), (60, 1), (80, 0))
-
-    def force_right_fast(self, x):
-        return self.fuzzification(x, (60, 0), (80, 1), (100, 0))
+    def defuzzification(self, belonging):
+        left_fast, left_slow, right_fast, right_slow, stop = belonging
+        points = np.linspace(-100, 100, 1000)
+        integral = 0.0
+        sums = 0.0
+        for i in range(len(points)):
+            force_right_fast = min(right_fast, self.fuzzification(points[i], (60, 0), (80, 1), (100, 0)))
+            force_right_slow = min(right_slow, self.fuzzification(points[i], (0, 0), (60, 1), (80, 0)))
+            force_left_fast = min(left_fast, self.fuzzification(points[i], (-100, 0), (-80, 1), (-60, 0)))
+            force_left_slow = min(left_slow, self.fuzzification(points[i], (-80, 0), (-60, 1), (0, 0)))
+            force_Stop = min(stop, self.fuzzification(points[i], (-60, 0), (0, 1), (60, 0)))
+            max_force = max(force_right_fast, force_right_slow, force_left_fast, force_left_slow, force_Stop)
+            integral += max_force
+            sums += max_force * points[i]
+        if integral == 0:
+            return 0
+        else:
+            return sums / integral

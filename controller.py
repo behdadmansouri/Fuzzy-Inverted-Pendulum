@@ -5,20 +5,16 @@ import numpy as np
 from fuzzy.storage.fcl.Reader import Reader
 
 
-class FuzzyController:
-
+class FuzzyController(object):
     def __init__(self, fcl_path):
         self.system = Reader().load_from_file(fcl_path)
 
-    def _make_input(self, world):
-        return dict(
-            cp=world.x,
-            cv=world.v,
-            pa=degrees(world.theta),
-            pv=degrees(world.omega)
-        )
+    @staticmethod
+    def _make_input(world):
+        return dict(cp=world.x, cv=world.v, pa=degrees(world.theta), pv=degrees(world.omega))
 
-    def _make_output(self):
+    @staticmethod
+    def _make_output():
         return dict(force=0.)
 
     def decide(self, world):
@@ -74,7 +70,8 @@ class FuzzyController:
         else:
             return 0
 
-    def linear_equation(self, x1, y1, x2, y2, x):
+    @staticmethod
+    def linear_equation(x1, y1, x2, y2, x):
         if x1 == x2:
             y = float((max(y1, y2)))
         else:
@@ -83,7 +80,8 @@ class FuzzyController:
             y = slope * x + offset
         return y
 
-    def inference(self, param):
+    @staticmethod
+    def inference(param):
         stop = max(max(min(param['pa_up'], param['pv_stop']),
                        min(param['pa_up_right'], param['pv_ccw_slow']),
                        min(param['pa_up_left'], param['pv_cw_slow'])),
